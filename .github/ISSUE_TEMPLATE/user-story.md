@@ -1,3 +1,7 @@
+---
+name: User Story
+about: Issue template for defining user story behaviors we want to implement
+---
 **As a** [role]
 **I need** [function]
 **So that** [benefit]
