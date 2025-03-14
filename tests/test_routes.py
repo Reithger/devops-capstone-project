@@ -3,7 +3,7 @@ Account API Service Test Suite
 
 Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
-  coverage report -m
+  coverage report -m 
 """
 import os
 import logging
@@ -123,4 +123,27 @@ class TestAccountService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
+    def test_method_not_allowed(self):
+        """It should not do anything when an invalid method is used for a given URL pathway"""
+        response = self.client.post(BASE_URL + "/0")
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
     # ADD YOUR TEST CASES HERE ...
+
+    def test_read_an_account(self):
+        """It should retrieve by ID the same account it added to the database"""
+        account = AccountFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=account.serialize(),
+            content_type="application/json"
+        )
+        id = response.get_json()["id"]
+        read_response = self.client.get(BASE_URL + "/" + str(id))
+        self.assertEqual(read_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(read_response.get_json()["name"], account.name)
+
+    def test_account_not_found(self):
+        """It should receive an HTTP 404 error code for reading a non-existent account"""
+        read_response = self.client.get(BASE_URL + "/0")
+        self.assertEqual(read_response.status_code, status.HTTP_404_NOT_FOUND)
