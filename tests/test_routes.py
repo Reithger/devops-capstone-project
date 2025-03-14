@@ -169,3 +169,33 @@ class TestAccountService(TestCase):
         """It should not change anything in the database and receive the same 204 response"""
         delete_response = self.client.delete(BASE_URL + "/0")
         self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_list_accounts(self):
+        """It should retrieve a list of dictionaries of the accounts in the database"""
+        acc_one = AccountFactory()
+        acc_two = AccountFactory()
+        self.client.post(
+            BASE_URL,
+            json=acc_one.serialize(),
+            content_type="application/json"
+        )
+        self.client.post(
+            BASE_URL,
+            json=acc_two.serialize(),
+            content_type="application/json"
+        )
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.get_json()
+        self.assertEqual(len(data), 2)
+        test_acc = data[0]
+        if(test_acc["name"] == acc_one.name):
+            self.assertEqual(test_acc["name"], acc_one.name)
+        else:
+            self.assertEqual(test_acc["name"], acc_two.name)
+
+    def test_list_accounts_none_found(self):
+        """It should retrieve an empty list when the database is empty"""
+        response = self.client.get(BASE_URL)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.get_json(), [])
