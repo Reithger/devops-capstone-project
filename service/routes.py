@@ -1,6 +1,6 @@
 """
 Account Service
-
+ 
 This microservice handles the lifecycle of Accounts
 """
 # pylint: disable=unused-import
@@ -69,7 +69,17 @@ def create_accounts():
 ######################################################################
 
 # ... place you code here to READ an account ...
-
+@app.route("/accounts/<int:id>", methods=["GET"])
+def read_account(id):
+    """
+    Method to handle the RESTful API endpoints for retrieving an account by ID reference
+    """
+    app.logger.info("Request to retrieve account with id %s", id)
+    acc = Account.find(id)
+    if(not acc):
+        abort(status.HTTP_404_NOT_FOUND)
+    out = acc.serialize()
+    return make_response(out, status.HTTP_200_OK)
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
