@@ -199,3 +199,31 @@ class TestAccountService(TestCase):
         response = self.client.get(BASE_URL)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.get_json(), [])
+
+    def test_update_accounts(self):
+        """It should update an account via a put endpoint with an id and new account info"""
+        acc = AccountFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=acc.serialize(),
+            content_type="application/json"
+        )
+        acc_new = AccountFactory()
+        id = str(response.get_json()["id"])
+        put_response = self.client.put(
+            BASE_URL + "/" + id,
+            json = acc_new.serialize(),
+            content_type="application/json"
+        )
+        self.assertEqual(put_response.status_code, status.HTTP_200_OK)
+        get_response = self.client.get(BASE_URL + "/" + id)
+        self.assertEqual(get_response.get_json()["name"], acc_new.name)
+
+    def test_update_accounts_not_found(self):
+        """It should fail to update an account that is misidentified via id"""
+        acc = AccountFactory()
+        response = self.client.put(BASE_URL + "/0",
+            json = acc.serialize(),
+            content_type = "application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
