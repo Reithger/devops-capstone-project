@@ -230,7 +230,7 @@ class TestAccountService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
-    def test_security(self):
+    def test_security_headers(self):
         """It should return the security headers for this program server"""
         response = self.client.get("/", environ_overrides=HTTPS_ENVIRON)
         data = response.headers
@@ -238,3 +238,9 @@ class TestAccountService(TestCase):
         self.assertEqual(data.get("X-Content-Type-Options"), "nosniff")
         self.assertEqual(data.get("Content-Security-Policy"), "default-src 'self'; object-src 'none'")
         self.assertEqual(data.get("Referrer-Policy"), "strict-origin-when-cross-origin")
+
+    def test_CORS_policies(self):
+        """It should return the header "Access-Control-Allow-Origin:*"""
+        response = self.client.get("/", environ_overrides=HTTPS_ENVIRON)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
