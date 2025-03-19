@@ -12,13 +12,14 @@ from tests.factories import AccountFactory
 from service.common import status  # HTTP Status Codes
 from service.models import db, Account, init_db
 from service.routes import app
+from service import talisman
 
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
 )
 
 BASE_URL = "/accounts"
-
+HTTPS_ENVIRON = {'wsgi.url_scheme': 'https'}
 
 ######################################################################
 #  T E S T   C A S E S
@@ -34,6 +35,7 @@ class TestAccountService(TestCase):
         app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URI
         app.logger.setLevel(logging.CRITICAL)
         init_db(app)
+        talisman.force_https = False
 
     @classmethod
     def tearDownClass(cls):
@@ -227,3 +229,18 @@ class TestAccountService(TestCase):
             content_type = "application/json"
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_security_headers(self):
+        """It should return the security headers for this program server"""
+        response = self.client.get("/", environ_overrides=HTTPS_ENVIRON)
+        data = response.headers
+        self.assertEqual(data.get("X-Frame-Options"), "SAMEORIGIN")
+        self.assertEqual(data.get("X-Content-Type-Options"), "nosniff")
+        self.assertEqual(data.get("Content-Security-Policy"), "default-src 'self'; object-src 'none'")
+        self.assertEqual(data.get("Referrer-Policy"), "strict-origin-when-cross-origin")
+
+    def test_CORS_policies(self):
+        """It should return the header "Access-Control-Allow-Origin:*"""
+        response = self.client.get("/", environ_overrides=HTTPS_ENVIRON)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.headers.get("Access-Control-Allow-Origin"), "*")
