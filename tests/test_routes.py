@@ -3,7 +3,7 @@ Account API Service Test Suite
 
 Test cases can be run with the following:
   nosetests -v --with-spec --spec-color
-  coverage report -m 
+  coverage report -m
 """
 import os
 import logging
@@ -21,9 +21,12 @@ DATABASE_URI = os.getenv(
 BASE_URL = "/accounts"
 HTTPS_ENVIRON = {'wsgi.url_scheme': 'https'}
 
+
 ######################################################################
 #  T E S T   C A S E S
 ######################################################################
+
+
 class TestAccountService(TestCase):
     """Account Service Tests"""
 
@@ -153,7 +156,7 @@ class TestAccountService(TestCase):
     def test_delete_account(self):
         """It should remove a specified account from the database"""
         account = AccountFactory()
-        response=self.client.post(
+        response = self.client.post(
             BASE_URL,
             json=account.serialize(),
             content_type="application/json"
@@ -214,7 +217,7 @@ class TestAccountService(TestCase):
         id = str(response.get_json()["id"])
         put_response = self.client.put(
             BASE_URL + "/" + id,
-            json = acc_new.serialize(),
+            json=acc_new.serialize(),
             content_type="application/json"
         )
         self.assertEqual(put_response.status_code, status.HTTP_200_OK)
@@ -224,9 +227,10 @@ class TestAccountService(TestCase):
     def test_update_accounts_not_found(self):
         """It should fail to update an account that is misidentified via id"""
         acc = AccountFactory()
-        response = self.client.put(BASE_URL + "/0",
-            json = acc.serialize(),
-            content_type = "application/json"
+        response = self.client.put(
+            BASE_URL + "/0",
+            json=acc.serialize(),
+            content_type="application/json"
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
