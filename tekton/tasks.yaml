@@ -47,7 +47,6 @@ spec:
         pip install -qr requirements.txt
         echo "***** Running nosetests with: $(params.args)"
         nosetests $(params.args)
-
 ---
 apiVersion: tekton.dev/v1beta1
 kind: Task
